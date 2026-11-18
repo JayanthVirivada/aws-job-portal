@@ -1,0 +1,50 @@
+﻿# Environment and credentials
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+credentials
+.aws/
+
+# Java / Maven
+**/target/
+*.class
+*.jar
+*.war
+
+# Node.js
+**/node_modules/
+**/dist/
+**/.vite/
+
+# IDE and operating system
+.vscode/
+.idea/
+*.iml
+desktop.ini
+.DS_Store
+
+# Logs and backups
+*.log
+*.backup
+*.backup.*
+*.bak
+*~
+dependency-reduced-pom.xml
+
+# Local application overrides
+**/application-local.properties
+**/application-local.yml
+**/application-local.yaml
+
+# Additional local files
+backend/startup-error.txt
+backend/backup/
+backend/backup-java/
+
+# Local Spring Boot configuration
+backend/src/main/resources/application.properties

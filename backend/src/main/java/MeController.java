@@ -1,0 +1,24 @@
+
+package com.jobportal.backend;
+
+import java.util.Map;
+
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+public class MeController {
+
+    @GetMapping("/api/me")
+    public Map<String, String> me(
+            @AuthenticationPrincipal Jwt jwt) {
+
+        return Map.of(
+            "message", "Cognito JWT verified successfully",
+            "userId", jwt.getSubject()
+        );
+    }
+}
+

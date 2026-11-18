@@ -1,0 +1,546 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#10223A" />
+  <title>JSolutions | Job Portal</title>
+  <link rel="stylesheet" href="/app.css" />
+
+  <style>
+    [hidden] {
+      display: none !important;
+    }
+
+    .shell.portal-mode {
+      display: block;
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    .shell.portal-mode .brand {
+      display: none;
+    }
+
+    .shell.portal-mode .panel {
+      width: 100%;
+      max-width: none;
+      min-height: 100vh;
+    }
+
+    .shell.portal-mode .panel-inner {
+      width: 100%;
+      max-width: 1060px;
+      margin: 0 auto;
+    }
+
+    .dashboard-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .dashboard-actions button {
+      margin: 0;
+      width: auto;
+      min-width: 145px;
+    }
+
+    .jobs-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .job-card {
+      padding: 16px;
+      border: 1px solid #d8e1e9;
+      border-radius: 12px;
+    }
+
+    .job-filters {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: end;
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .job-filters .field {
+      flex: 1 1 220px;
+    }
+
+    #screen-settings #back-to-jobs {
+      margin-bottom: 22px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="shell">
+
+    <aside class="brand">
+      <div class="brand-top">
+        <span>JSolutions</span>
+      </div>
+
+      <div class="brand-body">
+        <h2>Build your career with JSolutions</h2>
+
+        <ul class="facts">
+          <li>Secure account registration and email verification</li>
+          <li>Discover job opportunities from employers</li>
+          <li>Account security powered by Amazon Cognito</li>
+        </ul>
+      </div>
+
+      <p class="brand-foot">
+        Powered by AWS | Secured by Amazon Cognito
+      </p>
+    </aside>
+
+    <main class="panel">
+      <div class="panel-inner">
+
+        <div class="mobile-brand">JSolutions</div>
+
+        <h1 id="title">Sign in</h1>
+        <p id="message" class="message" role="alert"></p>
+
+        <!-- SIGNUP -->
+        <form id="screen-signup" class="screen" hidden>
+          <p class="lede">Create your JSolutions account.</p>
+
+          <div class="field">
+            <label for="su-email">Email</label>
+            <input id="su-email" type="email" autocomplete="email" required />
+          </div>
+
+          <div class="field">
+            <label for="su-password">Password</label>
+            <div class="pw">
+              <input id="su-password" type="password"
+                     autocomplete="new-password" minlength="8" required />
+              <button type="button" class="reveal" data-reveal="su-password">
+                Show
+              </button>
+            </div>
+          </div>
+
+          <fieldset class="field">
+            <legend>I want to join as</legend>
+            <label style="display:block;margin:12px 0">
+              <input type="radio" name="account-type"
+                     value="JOB_SEEKER" checked required />
+              Job Seeker — Find and apply for jobs
+            </label>
+            <label style="display:block;margin:12px 0">
+              <input type="radio" name="account-type" value="EMPLOYER" />
+              Employer — Post jobs and hire candidates
+            </label>
+          </fieldset>
+
+          <div id="su-company-field" class="field" hidden>
+            <label for="su-company">Company Name</label>
+            <input id="su-company" type="text" maxlength="150"
+                   autocomplete="organization"
+                   placeholder="Enter your company name" />
+            <p class="hint">
+              Employer accounts require approval before employer features
+              become available.
+            </p>
+          </div>
+
+          <button type="submit" class="btn primary">Create account</button>
+
+          <p class="alt">
+            Already registered?
+            <a href="#" data-go="login">Sign in</a>
+          </p>
+        </form>
+
+        <!-- EMAIL VERIFICATION -->
+        <form id="screen-verify" class="screen" hidden>
+          <p class="lede">
+            Enter the verification code sent to your email.
+          </p>
+
+          <div class="field">
+            <label for="vf-code">Verification code</label>
+            <input
+              id="vf-code"
+              class="code"
+              autocomplete="one-time-code"
+              maxlength="6"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn primary">
+            Verify email
+          </button>
+
+          <p class="alt">
+            <a href="#" id="resend">Resend code</a>
+          </p>
+        </form>
+
+        <!-- LOGIN -->
+        <form id="screen-login" class="screen" hidden>
+          <p class="lede">
+            Welcome back. Sign in to continue.
+          </p>
+
+          <div class="field">
+            <label for="li-email">Email</label>
+            <input
+              id="li-email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <div class="label-row">
+              <label for="li-password">Password</label>
+              <a href="#" data-go="forgot">
+                Forgot password?
+              </a>
+            </div>
+
+            <div class="pw">
+              <input
+                id="li-password"
+                type="password"
+                autocomplete="current-password"
+                required
+              />
+
+              <button
+                type="button"
+                class="reveal"
+                data-reveal="li-password"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn primary">
+            Sign in
+          </button>
+
+          <p class="alt">
+            New here?
+            <a href="#" data-go="signup">
+              Create an account
+            </a>
+          </p>
+        </form>
+
+        <!-- MFA -->
+        <form id="screen-otp" class="screen" hidden>
+          <p class="lede">
+            Enter your verification code.
+          </p>
+
+          <div id="qr-box" class="qr" hidden>
+            <img
+              id="qr"
+              alt="Authenticator setup QR code"
+              width="168"
+              height="168"
+            />
+
+            <p class="hint">
+              Scan the QR code using your authenticator app.
+            </p>
+
+            <code id="secret"></code>
+          </div>
+
+          <div class="field">
+            <label for="otp-code">Verification code</label>
+            <input
+              id="otp-code"
+              class="code"
+              inputmode="numeric"
+              autocomplete="one-time-code"
+              maxlength="6"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn primary">
+            Verify
+          </button>
+        </form>
+
+        <!-- FORGOT PASSWORD -->
+        <form id="screen-forgot" class="screen" hidden>
+          <p class="lede">
+            Enter your email to receive a password reset code.
+          </p>
+
+          <div class="field">
+            <label for="fp-email">Email</label>
+            <input
+              id="fp-email"
+              type="email"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <button type="submit" class="btn primary">
+            Send reset code
+          </button>
+
+          <p class="alt">
+            <a href="#" data-go="login">
+              Back to sign in
+            </a>
+          </p>
+        </form>
+
+        <!-- RESET PASSWORD -->
+        <form id="screen-reset" class="screen" hidden>
+          <p class="lede">
+            Enter your reset code and new password.
+          </p>
+
+          <div class="field">
+            <label for="rp-code">Verification code</label>
+            <input
+              id="rp-code"
+              class="code"
+              autocomplete="one-time-code"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="rp-password">New password</label>
+
+            <div class="pw">
+              <input
+                id="rp-password"
+                type="password"
+                autocomplete="new-password"
+                required
+              />
+
+              <button
+                type="button"
+                class="reveal"
+                data-reveal="rp-password"
+              >
+                Show
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="btn primary">
+            Set new password
+          </button>
+        </form>
+
+        <!-- JOB DASHBOARD -->
+        <section id="screen-home" class="screen" hidden>
+
+          <div class="account">
+            <span
+              id="avatar"
+              class="avatar"
+              aria-hidden="true"
+            ></span>
+
+            <div>
+              <p class="account-label">
+                Signed in as
+              </p>
+
+              <p
+                id="who"
+                class="account-email"
+              ></p>
+            </div>
+          </div>
+
+          <div class="jobs-dashboard">
+
+            <div class="dashboard-heading">
+              <h2>Find your next opportunity</h2>
+
+              <p class="lede">
+                Explore job opportunities available on JSolutions.
+              </p>
+            </div>
+
+            <div class="job-filters">
+
+              <div class="field">
+                <label for="job-search">
+                  Search jobs
+                </label>
+
+                <input
+                  id="job-search"
+                  type="search"
+                  placeholder="Job title or company"
+                  autocomplete="off"
+                />
+              </div>
+
+              <div class="field">
+                <label for="job-location">
+                  Location
+                </label>
+
+                <select id="job-location">
+                  <option value="">
+                    All locations
+                  </option>
+                </select>
+              </div>
+
+              <button
+                id="search-jobs"
+                type="button"
+                class="btn primary"
+              >
+                Search Jobs
+              </button>
+
+            </div>
+
+            <div class="job-results">
+              <h3>Available Jobs</h3>
+
+              <p id="jobs-status" role="status">
+                Job listings will appear here.
+              </p>
+
+              <div
+                id="jobs-list"
+                class="jobs-list"
+                aria-live="polite"
+              ></div>
+            </div>
+
+          </div>
+
+          <!-- DASHBOARD ACTIONS -->
+          <div class="dashboard-actions">
+
+            <button
+              id="open-settings"
+              type="button"
+              class="btn ghost"
+            >
+              Account Settings
+            </button>
+
+            <button
+              id="logout"
+              type="button"
+              class="btn ghost"
+            >
+              Sign out
+            </button>
+
+          </div>
+
+        </section>
+
+        <!-- ACCOUNT SETTINGS -->
+        <section
+          id="screen-settings"
+          class="screen"
+          hidden
+        >
+
+          <button
+            id="back-to-jobs"
+            type="button"
+            class="btn ghost"
+          >
+            Back to Jobs
+          </button>
+
+          <form id="change-pw" class="block">
+
+            <h2>Change password</h2>
+
+            <div class="field">
+              <label for="cp-old">
+                Current password
+              </label>
+
+              <div class="pw">
+                <input
+                  id="cp-old"
+                  type="password"
+                  autocomplete="current-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="reveal"
+                  data-reveal="cp-old"
+                >
+                  Show
+                </button>
+              </div>
+            </div>
+
+            <div class="field">
+              <label for="cp-new">
+                New password
+              </label>
+
+              <div class="pw">
+                <input
+                  id="cp-new"
+                  type="password"
+                  autocomplete="new-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="reveal"
+                  data-reveal="cp-new"
+                >
+                  Show
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              class="btn primary"
+            >
+              Update password
+            </button>
+
+          </form>
+
+        </section>
+
+      </div>
+
+      <footer class="legal">
+        &copy; 2026 JSolutions
+      </footer>
+    </main>
+
+  </div>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
