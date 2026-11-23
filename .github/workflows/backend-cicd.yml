@@ -1,0 +1,103 @@
+name: JSolutions Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-cicd.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: jsolutions-backend-deployment
+  cancel-in-progress: false
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: jobportal
+          POSTGRES_USER: jobportal
+          POSTGRES_PASSWORD: ci_test_only_2026
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U jobportal -d jobportal"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      AWS_REGION: us-east-2
+      ECR_REPOSITORY: jsolutions-backend
+      EKS_CLUSTER: jsolutions-eks
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: maven
+          cache-dependency-path: backend/pom.xml
+
+      - name: Build and test Spring Boot
+        env:
+          SPRING_PROFILES_ACTIVE: ci
+          SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/jobportal
+          SPRING_DATASOURCE_USERNAME: jobportal
+          SPRING_DATASOURCE_PASSWORD: ci_test_only_2026
+          DB_PASSWORD: ci_test_only_2026
+        run: mvn -B clean verify
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::838174962681:role/JSolutionsGitHubActionsRole
+          aws-region: us-east-2
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and push Docker image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" .
+          docker push "$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+
+      - name: Configure Kubernetes
+        run: |
+          aws eks update-kubeconfig \
+            --name "$EKS_CLUSTER" \
+            --region "$AWS_REGION"
+
+      - name: Deploy backend to EKS
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          kubectl set image deployment/jsolutions-backend \
+            backend="$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" \
+            -n default
+
+          kubectl rollout status deployment/jsolutions-backend \
+            -n default \
+            --timeout=300s
