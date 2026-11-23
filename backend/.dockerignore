@@ -1,0 +1,16 @@
+
+.git
+.gitignore
+.env
+.env.*
+*.log
+*.pem
+*.key
+*.jks
+*.p12
+application.properties
+application-*.properties
+src/main/resources/application.properties
+src/main/resources/application-*.properties
+.idea
+.vscode
