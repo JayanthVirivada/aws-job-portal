@@ -48,3 +48,9 @@ backend/backup-java/
 
 # Local Spring Boot configuration
 backend/src/main/resources/application.properties
+/backend/startup-log.txt
+/backend/startup-error.txt
+/startup-error.txt
+/startup-log.txt
+*.dump
+*.sql.bak
