@@ -15,9 +15,14 @@ import org.springframework.web.bind.annotation.*;
 public class JobController {
 
     private final JobRepository jobRepository;
+    private final LogoStorageService logoStorageService;
 
-    public JobController(JobRepository jobRepository) {
+    public JobController(
+            JobRepository jobRepository,
+            LogoStorageService logoStorageService) {
+
         this.jobRepository = jobRepository;
+        this.logoStorageService = logoStorageService;
     }
 
     // ============================================
@@ -141,7 +146,13 @@ public class JobController {
 
                     // Delete the employer-owned job.
 
+                    String logoKey = job.getLogoKey();
+
                     jobRepository.delete(job);
+
+                    logoStorageService.deleteLogo(
+                            logoKey, jwt.getSubject(), id
+                    );
 
                     return ResponseEntity
                             .noContent()

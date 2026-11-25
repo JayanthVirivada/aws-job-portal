@@ -16,6 +16,7 @@ public class Job {
     private String title;
     private String company;
     private String location;
+    private String logoKey;
 
     // Phase 4: Employer ownership
     private String employerId;
@@ -56,5 +57,13 @@ public class Job {
 
     public void setEmployerId(String employerId) {
         this.employerId = employerId;
+    }
+
+    public String getLogoKey() {
+        return logoKey;
+    }
+
+    public void setLogoKey(String logoKey) {
+        this.logoKey = logoKey;
     }
 }

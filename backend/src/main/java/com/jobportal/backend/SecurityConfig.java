@@ -58,6 +58,17 @@ public class SecurityConfig {
                     "/api/jobs/*/applicants/*/resume-url"
                 ).hasRole("EMPLOYER")
 
+                // Company logo permissions
+                .requestMatchers(
+                    HttpMethod.GET,
+                    "/api/jobs/*/logo"
+                ).permitAll()
+
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/jobs/*/logo"
+                ).hasRole("EMPLOYER")
+
                 // Public job listings
                 .requestMatchers(
                     HttpMethod.GET,

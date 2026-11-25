@@ -323,6 +323,7 @@ function createJobCard(job) {
   });
 
   card.append(title, company, location, details);
+  displayCompanyLogo(card, job);
 
   if (currentRole === 'JOB_SEEKER') {
     const apply = document.createElement('button');
@@ -800,6 +801,123 @@ async function loadMyApplications() {
 // EMPLOYER DASHBOARD
 // ============================================
 
+
+function validateCompanyLogo(file) {
+  if (!file) {
+    throw new Error('Select a company logo.');
+  }
+
+  if (!['image/png', 'image/jpeg'].includes(file.type)) {
+    throw new Error('Only PNG and JPEG images are allowed.');
+  }
+
+  if (file.size === 0 || file.size > 1024 * 1024) {
+    throw new Error('Logo must be between 1 byte and 1 MB.');
+  }
+}
+
+async function uploadCompanyLogo(jobId, file) {
+  validateCompanyLogo(file);
+
+  const token = await getAccessToken();
+  const formData = new FormData();
+
+  formData.append('file', file);
+
+  const response = await fetch(
+    `${API}/api/jobs/${jobId}/logo`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token.toString()}`,
+        Accept: 'application/json'
+      },
+      body: formData
+    }
+  );
+
+  const result = await response.json().catch(() => ({}));
+
+  if (!response.ok) {
+    throw new Error(
+      result.message ||
+      `Logo upload failed (HTTP ${response.status}).`
+    );
+  }
+
+  return result;
+}
+
+function displayCompanyLogo(card, job) {
+  if (!job.logoKey) return;
+
+  const image = document.createElement('img');
+
+  image.alt = `${job.company || 'Company'} logo`;
+  image.loading = 'lazy';
+
+  image.src =
+    `${API}/api/jobs/${job.id}/logo?v=${encodeURIComponent(job.logoKey)}`;
+
+  Object.assign(image.style, {
+    width: '72px',
+    height: '72px',
+    objectFit: 'contain',
+    backgroundColor: '#ffffff',
+    border: '1px solid #d5dce5',
+    borderRadius: '10px',
+    padding: '6px',
+    marginBottom: '12px'
+  });
+
+  image.addEventListener('error', () => image.remove());
+
+  card.prepend(image);
+}
+
+function addCompanyLogoControls(card, job) {
+  const wrapper = document.createElement('div');
+  wrapper.style.margin = '12px 0';
+
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/png,image/jpeg';
+  input.setAttribute('aria-label', 'Select company logo');
+
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'btn ghost';
+
+  button.textContent = job.logoKey
+    ? 'Replace Logo'
+    : 'Upload Logo';
+
+  button.addEventListener('click', async () => {
+    const status = $('employer-status');
+
+    try {
+      button.disabled = true;
+      status.textContent = 'Uploading company logo...';
+
+      await uploadCompanyLogo(job.id, input.files[0]);
+
+      status.textContent = 'Company logo saved successfully.';
+
+      await loadJobs();
+      await loadEmployerJobs();
+
+    } catch (error) {
+      status.textContent = error.message;
+
+    } finally {
+      button.disabled = false;
+    }
+  });
+
+  wrapper.append(input, button);
+  card.appendChild(wrapper);
+}
+
 function createEmployerDashboard() {
   let dashboard = $('employer-dashboard');
   if (dashboard) return dashboard;
@@ -836,6 +954,15 @@ function createEmployerDashboard() {
       <input id="employer-location" required maxlength="150"
              placeholder="Toronto"
              style="display:block;width:100%;padding:12px;margin-bottom:16px">
+
+      <label for="employer-logo">Company Logo (Optional)</label>
+      <input id="employer-logo"
+             type="file"
+             accept="image/png,image/jpeg"
+             style="display:block;width:100%;margin-bottom:8px">
+      <p style="font-size:13px;margin-bottom:16px">
+        PNG or JPEG, maximum 1 MB.
+      </p>
 
       <button type="submit" class="btn">Post Job</button>
     </form>
@@ -874,14 +1001,31 @@ function createEmployerDashboard() {
 
       try {
         button.disabled = true;
+        const logoFile = $('employer-logo').files[0];
+
+        if (logoFile) {
+          validateCompanyLogo(logoFile);
+        }
+
         status.textContent = 'Posting job...';
 
         const created = await authenticatedRequest(
           '/api/jobs', 'POST', job
         );
 
-        status.textContent =
-          `Job posted successfully! ID: ${created.id}`;
+        let message = `Job posted successfully! ID: ${created.id}`;
+
+        if (logoFile) {
+          try {
+            await uploadCompanyLogo(created.id, logoFile);
+            message += ' Company logo uploaded.';
+          } catch (error) {
+            message += ' Logo upload failed: ' + error.message
+              + ' Retry from My Job Postings.';
+          }
+        }
+
+        status.textContent = message;
 
         $('employer-job-form').reset();
 
@@ -943,6 +1087,9 @@ async function loadEmployerJobs() {
 
       const location = document.createElement('p');
       location.textContent = `Location: ${job.location}`;
+
+      displayCompanyLogo(card, job);
+      addCompanyLogoControls(card, job);
 
       // ============================================
       // EDIT JOB
