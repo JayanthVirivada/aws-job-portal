@@ -83,7 +83,20 @@
             <version>2.30.38</version>
         </dependency>
 
-        <!-- Testing Dependencies -->
+                <!-- Amazon SNS -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>sns</artifactId>
+            <version>2.30.38</version>
+        </dependency>
+
+        <!-- Cognito verified user attributes -->
+        <dependency>
+            <groupId>software.amazon.awssdk</groupId>
+            <artifactId>cognitoidentityprovider</artifactId>
+            <version>2.30.38</version>
+        </dependency>
+<!-- Testing Dependencies -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator-test</artifactId>

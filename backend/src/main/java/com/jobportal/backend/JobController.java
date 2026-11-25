@@ -16,13 +16,16 @@ public class JobController {
 
     private final JobRepository jobRepository;
     private final LogoStorageService logoStorageService;
+    private final JobNotificationService notifications;
 
     public JobController(
             JobRepository jobRepository,
-            LogoStorageService logoStorageService) {
+            LogoStorageService logoStorageService,
+            JobNotificationService notifications) {
 
         this.jobRepository = jobRepository;
         this.logoStorageService = logoStorageService;
+        this.notifications = notifications;
     }
 
     // ============================================
@@ -75,6 +78,8 @@ public class JobController {
         // PostgreSQL generates the new job ID.
 
         Job savedJob = jobRepository.save(newJob);
+
+        notifications.notifyNewJob(savedJob);
 
         return ResponseEntity
                 .status(HttpStatus.CREATED)

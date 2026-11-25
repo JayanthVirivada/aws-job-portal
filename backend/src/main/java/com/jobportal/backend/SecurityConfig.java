@@ -114,6 +114,12 @@ public class SecurityConfig {
                     "/api/resumes/**"
                 ).hasRole("JOB_SEEKER")
 
+                // Job seeker email notifications
+                .requestMatchers(
+                    HttpMethod.POST,
+                    "/api/notifications/subscribe"
+                ).hasRole("JOB_SEEKER")
+
                 // Health checks
                 .requestMatchers(
                     HttpMethod.GET,

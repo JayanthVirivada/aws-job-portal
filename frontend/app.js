@@ -422,7 +422,89 @@ $('job-location').addEventListener('change', filterJobs);
 // JOB SEEKER DASHBOARD
 // ============================================
 
+function createJobAlertPanel() {
+    document.getElementById('job-alert-panel')?.remove();
+
+    const panel = document.createElement('section');
+    panel.id = 'job-alert-panel';
+    panel.className = 'job-card';
+
+    panel.innerHTML = `
+        <h3>Job Email Alerts</h3>
+        <p>Receive email notifications for new jobs
+           in your preferred location.</p>
+
+        <label for="alert-location">Preferred location</label>
+
+        <select id="alert-location">
+            <option value="Toronto">Toronto</option>
+            <option value="Mississauga">Mississauga</option>
+            <option value="Vancouver">Vancouver</option>
+            <option value="Quebec City">Quebec City</option>
+        </select>
+
+        <button id="subscribe-alerts"
+                type="button"
+                class="btn primary">
+            Subscribe to Job Alerts
+        </button>
+
+        <p id="alert-status" role="status"></p>
+
+        <p class="hint">
+            Confirm your subscription using the email
+            sent to your verified account address.
+            You can unsubscribe through notification emails.
+        </p>
+    `;
+
+    document.getElementById('screen-home').append(panel);
+
+    const button = panel.querySelector('#subscribe-alerts');
+    const status = panel.querySelector('#alert-status');
+
+    button.addEventListener('click', async () => {
+        button.disabled = true;
+
+        try {
+            const token = await getAccessToken();
+
+            const response = await fetch(
+                'http://localhost:8080/api/notifications/subscribe',
+                {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        location: panel.querySelector(
+                            '#alert-location'
+                        ).value
+                    })
+                }
+            );
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                throw new Error(
+                    result.message || `HTTP ${response.status}`
+                );
+            }
+
+            status.textContent = result.message;
+
+        } catch (error) {
+            status.textContent = error.message;
+        } finally {
+            button.disabled = false;
+        }
+    });
+}
+
 function createJobSeekerDashboard() {
+    // SNS alerts disabled pending AWS authorization.
   let dashboard = $('jobseeker-dashboard');
   if (dashboard) return dashboard;
 
@@ -919,6 +1001,7 @@ function addCompanyLogoControls(card, job) {
 }
 
 function createEmployerDashboard() {
+    document.getElementById('job-alert-panel')?.remove();
   let dashboard = $('employer-dashboard');
   if (dashboard) return dashboard;
 
